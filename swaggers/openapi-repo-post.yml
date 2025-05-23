@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Repo-Post API
+  description: API for managing user posts in the repo-post service.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/repo-post/api
+paths:
+  /hello:
+    get:
+      summary: Health check endpoint
+      description: Returns a simple hello message.
+      responses:
+        '200':
+          description: Hello message
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /posts:
+    post:
+      summary: Create a new post
+      description: Allows a user to create a post with optional text, media, reply, or repost.
+      consumes:
+        - multipart/form-data
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  nullable: true
+                media:
+                  type: string
+                  format: binary
+                  nullable: true
+                repostId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                replyId:
+                  type: string
+                  format: uuid
+                  nullable: true
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: The ID of the user creating the post
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postId:
+                    type: string
+                    format: uuid
+        '400':
+          description: Invalid request (e.g., missing required fields or invalid UUIDs)
+        '403':
+          description: User is blocked or not allowed to post
+        '404':
+          description: Repost or reply target not found
+        '500':
+          description: Internal server error
+
+  /posts/{postId}:
+    get:
+      summary: Get a specific post
+      description: Fetches the details of a post by ID.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostResponse'
+        '404':
+          description: Post not found
+    delete:
+      summary: Delete a user’s post
+      description: Allows a user to delete their own post.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: The ID of the user
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Post deleted successfully
+        '403':
+          description: User is not authorized to delete this post
+        '404':
+          description: Post not found
+        '500':
+          description: Internal server error
+
+  /posts/{postId}/media:
+    get:
+      summary: Get media associated with a post
+      description: Downloads the media file attached to a post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Media file retrieved successfully
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Media not found
+        '500':
+          description: Internal server error
+
+  /posts/{postId}/replies:
+    get:
+      summary: Get replies to a specific post
+      description: Retrieves all replies to a given post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of replies to the post
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostResponse'
+        '404':
+          description: Post not found
+
+  /posts/{postId}/reposts:
+    get:
+      summary: Get reposts of a specific post
+      description: Retrieves all reposts of a given post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of reposts of the post
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostResponse'
+        '404':
+          description: Post not found
+
+  /users/{userId}/posts:
+    get:
+      summary: Get posts by a specific user
+      description: Fetches all posts created by a user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of user’s posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostResponse'
+        '404':
+          description: User not found
+
+  /users/{userId}:
+    get:
+      summary: Get user details
+      description: Retrieves user information by ID.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid user ID
+        '404':
+          description: User not found
+
+components:
+  schemas:
+    PostResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        text:
+          type: string
+          nullable: true
+        media:
+          type: string
+          format: uri
+          nullable: true
+        repostId:
+          type: string
+          format: uuid
+          nullable: true
+        replyId:
+          type: string
+          format: uuid
+          nullable: true
+        creationDate:
+          type: string
+          format: date-time
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+        creationDate:
+          type: string
+          format: date-time

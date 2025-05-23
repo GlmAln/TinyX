@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repo-post
+spec:
+  selector:
+    matchLabels:
+      app: repo-post
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: repo-post
+    spec:
+      imagePullSecrets:
+        - name: info8-pull-secret
+      containers:
+      - name: repo-post
+        image: registry.cri.epita.fr/ing/majeures/tc/info/student/2026/2025-epitweet-tinyx-18/repo-post:1.0.4
+        ports:
+        - name: http
+          containerPort: 8081

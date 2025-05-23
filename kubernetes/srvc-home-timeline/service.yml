@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: srvc-home-timeline
+  namespace: info8
+  labels:
+    name: srvc-home-timeline
+spec:
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8085
+      targetPort: 8085
+  selector:
+    app: srvc-home-timeline

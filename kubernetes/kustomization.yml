@@ -1,0 +1,19 @@
+---
+
+kind: Kustomization
+namespace: info8
+
+resources:
+  - namespace.yml
+  - secrets.yml
+  - ingress.yml
+  - middleware.yml
+  - mongodb
+  - redis
+  - elasticsearch
+  - neo4j
+  - repo-social
+  - srvc-search
+  - repo-post
+  - srvc-user-timeline
+  - srvc-home-timeline

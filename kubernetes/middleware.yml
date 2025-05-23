@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-repo-post
+  namespace: info8
+spec:
+  stripPrefix:
+    prefixes:
+      - /repo-post
+      - /repo-social
+      - /search
+      - /srvc-user-timeline
+      - /srvc-home-timeline

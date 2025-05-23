@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: info8
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  serviceName: "mongodb"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      # terminationGracePeriodSeconds: 10 # TODO: Enable it for prod
+      containers:
+        - name: mongo
+          image: registry.cri.epita.fr/ing/majeures/tc/info/sundaland/mongo:7.0.5
+          args: ["--dbpath","/data/db"]
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_DATABASE
+              value: Epitweet
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-admin-credentials
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-admin-credentials
+                  key: MONGO_INITDB_ROOT_PASSWORD
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+            - name: mongodb-initdb
+              mountPath: /docker-entrypoint-initdb.d/
+      volumes:
+        - name: mongodb-initdb
+          configMap:
+            name: mongodb-initdb
+
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi # Potentially allocate more space here

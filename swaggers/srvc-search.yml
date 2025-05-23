@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Search Services API
+  description: API for managing search operations.
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com/srvc-search/api
+
+paths:
+  /search:
+    get:
+      summary: Search for posts
+      description: Retrieves posts that match the given search terms provided in the `X-Terms` header.
+      parameters:
+        - name: X-Terms
+          in: header
+          required: true
+          description: Search terms used to query posts.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of matching posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid search query (e.g., empty or missing search terms)
+
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        postId:
+          type: string
+          format: uuid

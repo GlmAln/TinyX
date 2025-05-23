@@ -1,0 +1,7 @@
+---
+kind: Kustomization
+namespace: info8
+
+resources:
+  - statefulset.yml
+  - service.yml

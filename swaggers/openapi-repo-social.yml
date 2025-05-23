@@ -1,0 +1,322 @@
+openapi: 3.0.3
+info:
+  title: Repo-Social API
+  description: API for managing social interactions in the repo-social service.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/repo-social/api
+
+paths:
+  /posts/like:
+    post:
+      summary: Like a post
+      description: Allows a user to like a post if the author is not blocking them.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Like registered successfully
+        '403':
+          description: User is blocked by the post author
+        '404':
+          description: Post not found
+
+  /posts/unlike:
+    delete:
+      summary: Unlike a post
+      description: Allows a user to remove their like from a post.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: string
+                  format: uuid
+      responses:
+        '204':
+          description: Like removed successfully
+        '404':
+          description: Like not found
+
+  /posts/{postId}/likes:
+    get:
+      summary: Get users who liked a post
+      description: Retrieves the list of users who liked the specified post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Likes retrieved successfully (no content returned)
+        '404':
+          description: Post not found
+
+  /users/follow:
+    post:
+      summary: Follow a user
+      description: Allows a user to follow another user if they are not blocked.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+              description: UUID of the user to follow
+      responses:
+        '201':
+          description: Follow relation created successfully
+        '403':
+          description: User is blocked
+        '404':
+          description: Target user not found
+
+  /users/unfollow:
+    delete:
+      summary: Unfollow a user
+      description: Allows a user to unfollow another user.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+              description: UUID of the user to unfollow
+      responses:
+        '204':
+          description: Follow relation removed successfully
+        '404':
+          description: Follow relation not found
+
+  /users/block:
+    post:
+      summary: Block a user
+      description: Blocks a user and removes any existing follow relationships.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+              description: UUID of the user to block
+      responses:
+        '201':
+          description: User blocked successfully
+        '403':
+          description: Action forbidden
+        '404':
+          description: User not found
+
+  /users/unblock:
+    delete:
+      summary: Unblock a user
+      description: Unblocks a previously blocked user.
+      parameters:
+        - in: header
+          name: X-user-id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: uuid
+              description: UUID of the user to unblock
+      responses:
+        '204':
+          description: User unblocked successfully
+        '403':
+          description: Action forbidden
+        '404':
+          description: Block relation not found
+
+  /users/{userId}/likes:
+    get:
+      summary: Get posts liked by a user
+      description: Retrieves all posts liked by the specified user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of liked posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    postId:
+                      type: string
+                      format: uuid
+        '404':
+          description: User not found
+
+  /users/{userId}/follows:
+    get:
+      summary: Get a user’s followees
+      description: Retrieves the list of users that userId follows.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of followees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    followeeId:
+                      type: string
+                      format: uuid
+        '404':
+          description: User not found
+
+  /users/{userId}/followers:
+    get:
+      summary: Get a user’s followers
+      description: Retrieves the list of users who follow the specified user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of followers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    followerId:
+                      type: string
+                      format: uuid
+        '404':
+          description: User not found
+
+  /users/{userId}/blocks:
+    get:
+      summary: Get users blocked by a user
+      description: Retrieves the list of users blocked by the specified user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of blocked users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    blockedUserId:
+                      type: string
+                      format: uuid
+        '404':
+          description: User not found
+
+  /users/{userId}/blocked:
+    get:
+      summary: Get users who blocked a user
+      description: Retrieves the list of users that blocked a user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
+                      format: uuid
+        '404':
+          description: User not found

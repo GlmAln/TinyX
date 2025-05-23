@@ -1,0 +1,222 @@
+### Parameters
+
+@base_repo_post=http://localhost:8081
+@base_repo_social=http://localhost:8082
+@base_srvc_search=http://localhost:8083
+@base_srvc_user_timeline=http://localhost:8084
+@base_srvc_home_timeline=http://localhost:8085
+
+@token=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImNvYWNoIiwiaWF0IjoxNzQyNTYzMTU0LCJleHAiOjE3NDI1NjY3NTR9.FF7g36Fge8FFx54U-HDZt6vK3SmIaa-zRJRZBnMf1pU
+
+@user1=3fa85f64-5717-4562-b3fc-2c963f66afa1
+@user2=3fa85f64-5717-4562-b3fc-2c963f66afa2
+@user3=3fa85f64-5717-4562-b3fc-2c963f66afa3
+
+### User 1 Create Post 1
+
+POST {{base_repo_post}}/api/posts
+X-user-id: {{user1}}
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="text"
+
+Hello World
+
+--boundary
+Content-Disposition: form-data; name="replyId"
+
+--boundary
+Content-Disposition: form-data; name="repostId"
+
+--boundary
+Content-Disposition: form-data; name="media"; filename="cat.png"
+Content-Type: image/png
+
+< ./resources/cat.png
+
+--boundary
+
+
+> {%
+    client.assert(response.status == 201, "Invalid status code: " + response.status)
+    client.global.set("user1_postId1",  response.body.postId);
+%}
+
+
+### User 2 Create Post 2
+
+POST {{base_repo_post}}/api/posts
+X-user-id: {{user2}}
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="text"
+
+Hello World 2
+
+--boundary
+Content-Disposition: form-data; name="replyId"
+
+--boundary
+Content-Disposition: form-data; name="repostId"
+
+--boundary
+
+
+
+> {%
+    client.assert(response.status == 201, "Invalid status code: " + response.status)
+    client.global.set("user2_postId2",  response.body.postId);
+%}
+
+### User 3 Create Post 3
+
+
+POST {{base_repo_post}}/api/posts
+X-user-id: {{user3}}
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="text"
+
+Hello World 3
+
+--boundary
+Content-Disposition: form-data; name="replyId"
+
+--boundary
+Content-Disposition: form-data; name="repostId"
+
+--boundary
+
+
+> {%
+    client.assert(response.status == 201, "Invalid status code: " + response.status)
+    client.global.set("user3_postId3", response.body.postId);
+%}
+
+
+### User 2 reply to Post 1 from User 1
+
+POST {{base_repo_post}}/api/posts
+X-user-id: {{user2}}
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="text"
+
+replyTo: 'Hello World'
+
+--boundary
+Content-Disposition: form-data; name="replyId"
+
+{{user1_postId1}}
+
+
+
+--boundary
+Content-Disposition: form-data; name="repostId"
+
+--boundary
+
+> {%
+    client.assert(response.status == 201, "Invalid status code: " + response.status)
+%}
+
+### User 3 repost Post 2 from User 2
+
+POST {{base_repo_post}}/api/posts
+X-user-id: {{user3}}
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="text"
+
+repostTo: 'Hello World 2'
+
+--boundary
+Content-Disposition: form-data; name="replyId"
+
+--boundary
+Content-Disposition: form-data; name="repostId"
+
+{{user2_postId2}}
+
+--boundary
+
+> {%
+    client.assert(response.status == 201, "Invalid status code: " + response.status)
+%}
+
+### Get UserTimeline
+
+GET {{base_srvc_user_timeline}}/api/users/timeline?userIds={{user2}}
+
+### Follow 1 -> 2
+
+POST {{base_repo_social}}/api/repo-social/users/follow
+X-user-id: {{user1}}
+Content-Type: application/json
+
+"{{user2}}"
+
+### Follow user 1 -> 3
+
+POST {{base_repo_social}}/api/repo-social/users/follow
+X-user-id: {{user1}}
+Content-Type: application/json
+
+"{{user3}}"
+
+### Get HomeTimeLine user 1
+
+GET {{base_srvc_home_timeline}}/api/users/{{user1}}/home-timeline
+
+### Block user 1 -> 3
+
+POST {{base_repo_social}}/api/repo-social/users/block
+X-user-id: {{user1}}
+Content-Type: application/json
+
+"{{user2}}"
+
+### Unfollow user 1 -> 2
+
+DELETE {{base_repo_social}}/api/repo-social/users/unfollow
+x-user-id: {{user1}}
+Content-Type: application/json
+
+"{{user2}}"
+
+### Unfollow user 1 -> 3
+
+DELETE {{base_repo_social}}/api/repo-social/users/unfollow
+x-user-id: {{user1}}
+Content-Type: application/json
+
+"{{user3}}"
+
+### Get followers of user 2
+
+GET {{base_repo_social}}/api/repo-social/users/{{user2}}/followers
+
+### Get Search word "world"
+
+GET {{base_srvc_search}}/search
+X-Terms: world
+
+### Get UserTimeline of user 3
+
+GET {{base_srvc_user_timeline}}/api/users/timeline?userIds={{user3}}
+
+### Get HomeTimeline of user 1
+
+GET {{base_srvc_home_timeline}}/api/users/{{user1}}/home-timeline
+
+

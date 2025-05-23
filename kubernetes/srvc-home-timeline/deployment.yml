@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srvc-home-timeline
+spec:
+  selector:
+    matchLabels:
+      app: srvc-home-timeline
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: srvc-home-timeline
+    spec:
+      imagePullSecrets:
+        - name: info8-pull-secret
+      containers:
+      - name: srvc-home-timeline
+        image: registry.cri.epita.fr/ing/majeures/tc/info/student/2026/2025-epitweet-tinyx-18/srvc-home-timeline:1.0.4
+        ports:
+        - name: http
+          containerPort: 8085

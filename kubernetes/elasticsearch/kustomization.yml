@@ -1,0 +1,13 @@
+---
+kind: Kustomization
+namespace: info8
+
+resources:
+  - statefulset.yml
+  - service.yml
+  - secrets.yml
+
+configMapGenerator:
+  - name: elasticsearch-initdb
+    files:
+      - init.sh

@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: User Timeline Services API
+  description: API for managing user timelines.
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com/srvc-user-timeline/api
+
+paths:
+  /users/timeline:
+    get:
+      summary: Get user timelines
+      description: Retrieves the timelines for a list of users, including authored and liked posts.
+      parameters:
+        - name: userIds
+          in: query
+          required: true
+          description: A list of UUIDs representing the users whose timelines are to be retrieved.
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: User timeline posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostIdResponse'
+        '400':
+          description: Invalid or missing userIds parameter
+
+components:
+  schemas:
+    PostIdResponse:
+      type: object
+      properties:
+        postId:
+          type: string
+          format: uuid

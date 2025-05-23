@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: srvc-search
+  namespace: info8
+  labels:
+    name: srvc-search
+spec:
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8083
+      targetPort: 8083
+  selector:
+    app: srvc-search

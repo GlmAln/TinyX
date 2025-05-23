@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: Home Timeline Services API
+  description: API for managing home timelines.
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com/srvc-home-timeline/api
+
+paths:
+  /users/{userId}/home-timeline:
+    get:
+      summary: Get home timeline
+      description: Retrieves the home timeline for a user based on followed users' posts and likes.
+      operationId: getHomeTimeline
+      tags:
+        - HomeTimeline
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: UUID of the user whose home timeline is to be retrieved.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Home timeline posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        postId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        likes:
+          type: integer
+          format: int32
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
